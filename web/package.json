@@ -70,7 +70,7 @@
     "@octokit/core": "^6.1.6",
     "@octokit/request-error": "^6.1.8",
     "@remixicon/react": "^4.7.0",
-    "@sentry/react": "^8.55.0",
+    "@sentry/react": "^10.32.1",
     "@svgdotjs/svg.js": "^3.2.5",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-form": "^1.23.7",
