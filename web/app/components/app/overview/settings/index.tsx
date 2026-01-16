@@ -55,6 +55,9 @@ export type ConfigParams = {
   show_workflow_steps: boolean
   use_icon_as_answer_icon: boolean
   enable_sso?: boolean
+  chatbot_icon_type?: AppIconType
+  chatbot_icon?: string
+  chatbot_icon_background?: string
 }
 
 const prefixSettings = 'appOverview.overview.appInfo.settings'
@@ -83,6 +86,10 @@ const SettingsModal: FC<ISettingsModalProps> = ({
     default_language,
     show_workflow_steps,
     use_icon_as_answer_icon,
+    chatbot_icon_type,
+    chatbot_icon,
+    chatbot_icon_background,
+    chatbot_icon_url,
   } = appInfo.site
   const [inputInfo, setInputInfo] = useState({
     title,
@@ -107,6 +114,12 @@ const SettingsModal: FC<ISettingsModalProps> = ({
     icon_type === 'image'
       ? { type: 'image', url: icon_url!, fileId: icon }
       : { type: 'emoji', icon, background: icon_background! },
+  )
+  const [showChatbotIconPicker, setShowChatbotIconPicker] = useState(false)
+  const [chatbotIcon, setChatbotIcon] = useState<AppIconSelection>(
+    chatbot_icon_type === 'image'
+      ? { type: 'image', url: chatbot_icon_url!, fileId: chatbot_icon }
+      : { type: 'emoji', icon: chatbot_icon || '🤖', background: chatbot_icon_background || '#FFEAD5' },
   )
 
   const { enableBilling, plan, webappCopyrightEnabled } = useProviderContext()
@@ -137,7 +150,10 @@ const SettingsModal: FC<ISettingsModalProps> = ({
     setAppIcon(icon_type === 'image'
       ? { type: 'image', url: icon_url!, fileId: icon }
       : { type: 'emoji', icon, background: icon_background! })
-  }, [appInfo, chat_color_theme, chat_color_theme_inverted, copyright, custom_disclaimer, default_language, description, icon, icon_background, icon_type, icon_url, privacy_policy, show_workflow_steps, title, use_icon_as_answer_icon])
+    setChatbotIcon(chatbot_icon_type === 'image'
+      ? { type: 'image', url: chatbot_icon_url!, fileId: chatbot_icon }
+      : { type: 'emoji', icon: chatbot_icon || '🤖', background: chatbot_icon_background || '#FFEAD5' })
+  }, [appInfo, chat_color_theme, chat_color_theme_inverted, copyright, custom_disclaimer, default_language, description, icon, icon_background, icon_type, icon_url, privacy_policy, show_workflow_steps, title, use_icon_as_answer_icon, chatbot_icon, chatbot_icon_background, chatbot_icon_type, chatbot_icon_url])
 
   const onHide = () => {
     onClose()
@@ -200,6 +216,9 @@ const SettingsModal: FC<ISettingsModalProps> = ({
       show_workflow_steps: inputInfo.show_workflow_steps,
       use_icon_as_answer_icon: inputInfo.use_icon_as_answer_icon,
       enable_sso: inputInfo.enable_sso,
+      chatbot_icon_type: chatbotIcon.type,
+      chatbot_icon: chatbotIcon.type === 'emoji' ? chatbotIcon.icon : chatbotIcon.fileId,
+      chatbot_icon_background: chatbotIcon.type === 'emoji' ? chatbotIcon.background : undefined,
     }
     await onSave?.(params)
     setSaveLoading(false)
@@ -298,6 +317,38 @@ const SettingsModal: FC<ISettingsModalProps> = ({
                 />
               </div>
               <p className="body-xs-regular pb-0.5 text-text-tertiary">{t('app.answerIcon.description')}</p>
+            </div>
+          )}
+          {/* chatbot bubble icon */}
+          {isChat && (
+            <div className="w-full">
+              <div className="flex items-center justify-between">
+                <div className="grow">
+                  <div className={cn('system-sm-semibold py-1 text-text-secondary')}>Chatbot Bubble Icon</div>
+                  <p className="body-xs-regular pb-0.5 text-text-tertiary">Customize the chat launcher button icon</p>
+                </div>
+                <AppIcon
+                  size="xxl"
+                  onClick={() => { setShowChatbotIconPicker(true) }}
+                  className="cursor-pointer"
+                  iconType={chatbotIcon.type}
+                  icon={chatbotIcon.type === 'image' ? chatbotIcon.fileId : chatbotIcon.icon}
+                  background={chatbotIcon.type === 'image' ? undefined : chatbotIcon.background}
+                  imageUrl={chatbotIcon.type === 'image' ? chatbotIcon.url : undefined}
+                />
+              </div>
+            </div>
+          )}
+          {showChatbotIconPicker && (
+            <div onClick={e => e.stopPropagation()}>
+              <AppIconPicker
+                onClose={() => { setShowChatbotIconPicker(false) }}
+                onSave={(v) => {
+                  setChatbotIcon(v)
+                  setShowChatbotIconPicker(false)
+                }}
+                defaultValue={chatbotIcon}
+              />
             </div>
           )}
           {/* language */}

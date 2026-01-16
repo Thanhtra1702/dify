@@ -75,6 +75,18 @@ class AppIconUrlField(fields.Raw):
         return None
 
 
+class ChatbotIconUrlField(fields.Raw):
+    def output(self, key, obj, **kwargs):
+        if obj is None:
+            return None
+
+        from models.model import IconType, Site
+
+        if isinstance(obj, Site) and obj.chatbot_icon_type == IconType.IMAGE:
+            return file_helpers.get_signed_file_url(obj.chatbot_icon)
+        return None
+
+
 class AvatarUrlField(fields.Raw):
     def output(self, key, obj, **kwargs):
         if obj is None:

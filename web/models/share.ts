@@ -25,6 +25,10 @@ export type SiteInfo = {
   privacy_policy?: string
   custom_disclaimer?: string
   show_workflow_steps?: boolean
+  chatbot_icon_type?: AppIconType | null
+  chatbot_icon?: string
+  chatbot_icon_background?: string | null
+  chatbot_icon_url?: string | null
   use_icon_as_answer_icon?: boolean
 }
 

@@ -3,7 +3,7 @@ import json
 from flask_restx import fields
 
 from fields.workflow_fields import workflow_partial_fields
-from libs.helper import AppIconUrlField, TimestampField
+from libs.helper import AppIconUrlField, ChatbotIconUrlField, TimestampField
 
 
 class JsonStringField(fields.Raw):
@@ -161,6 +161,10 @@ site_fields = {
     "prompt_public": fields.Boolean,
     "app_base_url": fields.String,
     "show_workflow_steps": fields.Boolean,
+    "chatbot_icon_type": fields.String,
+    "chatbot_icon": fields.String,
+    "chatbot_icon_background": fields.String,
+    "chatbot_icon_url": ChatbotIconUrlField,
     "use_icon_as_answer_icon": fields.Boolean,
     "created_by": fields.String,
     "created_at": TimestampField,

@@ -281,7 +281,20 @@
       const displayDiv = document.createElement("div");
       displayDiv.style.cssText =
         "position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; z-index: 2147483647;";
-      displayDiv.innerHTML = svgIcons;
+
+      let customIconHtml = '';
+      if (config.chatbotConfig) {
+        if (config.chatbotConfig.icon_type === 'image') {
+          customIconHtml = `<img id="customIcon" src="${config.chatbotConfig.icon}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">`;
+        } else if (config.chatbotConfig.icon_type === 'emoji') {
+          customIconHtml = `<div id="customIcon" style="font-size: 24px; line-height: 1;">${config.chatbotConfig.icon}</div>`;
+        }
+        if (config.chatbotConfig.icon_background) {
+          containerDiv.style.backgroundColor = config.chatbotConfig.icon_background;
+        }
+      }
+
+      displayDiv.innerHTML = svgIcons + customIconHtml;
       containerDiv.appendChild(displayDiv);
       document.body.appendChild(containerDiv);
 
@@ -425,12 +438,22 @@
   }
 
   function setSvgIcon(type = "open") {
+    const openIcon = document.getElementById("openIcon");
+    const closeIcon = document.getElementById("closeIcon");
+    const customIcon = document.getElementById("customIcon");
+
     if (type === "open") {
-      document.getElementById("openIcon").style.display = "block";
-      document.getElementById("closeIcon").style.display = "none";
+      if (closeIcon) closeIcon.style.display = "none";
+      if (customIcon) {
+        customIcon.style.display = "block";
+        if (openIcon) openIcon.style.display = "none";
+      } else {
+        if (openIcon) openIcon.style.display = "block";
+      }
     } else {
-      document.getElementById("openIcon").style.display = "none";
-      document.getElementById("closeIcon").style.display = "block";
+      if (openIcon) openIcon.style.display = "none";
+      if (customIcon) customIcon.style.display = "none";
+      if (closeIcon) closeIcon.style.display = "block";
     }
   }
 

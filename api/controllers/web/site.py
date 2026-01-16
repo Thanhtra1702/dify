@@ -5,7 +5,7 @@ from configs import dify_config
 from controllers.web import web_ns
 from controllers.web.wraps import WebApiResource
 from extensions.ext_database import db
-from libs.helper import AppIconUrlField
+from libs.helper import AppIconUrlField, ChatbotIconUrlField
 from models.account import TenantStatus
 from models.model import Site
 from services.feature_service import FeatureService
@@ -40,6 +40,10 @@ class AppSiteApi(WebApiResource):
         "default_language": fields.String,
         "prompt_public": fields.Boolean,
         "show_workflow_steps": fields.Boolean,
+        "chatbot_icon_type": fields.String,
+        "chatbot_icon": fields.String,
+        "chatbot_icon_background": fields.String,
+        "chatbot_icon_url": ChatbotIconUrlField,
         "use_icon_as_answer_icon": fields.Boolean,
     }
 

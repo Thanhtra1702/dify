@@ -39,6 +39,9 @@ class AppSiteUpdatePayload(BaseModel):
     prompt_public: bool | None = Field(default=None)
     show_workflow_steps: bool | None = Field(default=None)
     use_icon_as_answer_icon: bool | None = Field(default=None)
+    chatbot_icon_type: str | None = Field(default=None)
+    chatbot_icon: str | None = Field(default=None)
+    chatbot_icon_background: str | None = Field(default=None)
 
     @field_validator("default_language")
     @classmethod
@@ -96,6 +99,9 @@ class AppSite(Resource):
             "prompt_public",
             "show_workflow_steps",
             "use_icon_as_answer_icon",
+            "chatbot_icon_type",
+            "chatbot_icon",
+            "chatbot_icon_background",
         ]:
             value = getattr(args, attr_name)
             if value is not None:
