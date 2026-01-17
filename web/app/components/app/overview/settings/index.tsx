@@ -343,11 +343,10 @@ const SettingsModal: FC<ISettingsModalProps> = ({
             <div onClick={e => e.stopPropagation()}>
               <AppIconPicker
                 onClose={() => { setShowChatbotIconPicker(false) }}
-                onSave={(v) => {
+                onSelect={(v) => {
                   setChatbotIcon(v)
                   setShowChatbotIconPicker(false)
                 }}
-                defaultValue={chatbotIcon}
               />
             </div>
           )}

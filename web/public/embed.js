@@ -23,6 +23,48 @@
     </svg>
     `;
 
+  // Emoji data cache (loaded from CDN)
+  let emojiData = null;
+
+  // Load emoji data from CDN
+  async function loadEmojiData() {
+    if (emojiData) return emojiData;
+    try {
+      const response = await fetch('https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/sets/15/native.json');
+      if (response.ok) {
+        emojiData = await response.json();
+      }
+    } catch (e) {
+      console.warn('Failed to load emoji data from CDN');
+    }
+    return emojiData;
+  }
+
+  // Function to convert emoji shortcode to Unicode
+  function getEmojiFromShortcode(shortcode, data) {
+    if (!shortcode) return shortcode;
+    // If it's already a Unicode emoji (contains non-ASCII), return as-is
+    if (/[^\x00-\x7F]/.test(shortcode)) return shortcode;
+
+    // Look up in emoji data
+    if (data && data.emojis && data.emojis[shortcode]) {
+      const emoji = data.emojis[shortcode];
+      if (emoji.skins && emoji.skins[0] && emoji.skins[0].native) {
+        return emoji.skins[0].native;
+      }
+    }
+
+    // Fallback static map for common emojis
+    const fallbackMap = {
+      'grin': '😀', 'smiley': '😃', 'smile': '😄', 'grinning': '😁', 'laughing': '😆',
+      'sweat_smile': '😅', 'joy': '😂', 'rofl': '🤣', 'blush': '😊', 'heart_eyes': '😍',
+      'sunglasses': '😎', 'thinking': '🤔', 'thumbsup': '👍', '+1': '👍', 'heart': '❤️',
+      'fire': '🔥', 'star': '⭐', 'sparkles': '✨', '100': '💯', 'rocket': '🚀',
+      'robot': '🤖', 'robot_face': '🤖', 'wave': '👋', 'clap': '👏',
+    };
+    return fallbackMap[shortcode.toLowerCase()] || shortcode;
+  }
+
 
   const originalIframeStyleText = `
     position: absolute;
@@ -80,6 +122,31 @@
       console.error(`${configKey} is empty or token is not provided`);
       return;
     }
+
+    // Load emoji data from CDN first
+    const loadedEmojiData = await loadEmojiData();
+
+    try {
+      const baseUrl = config.baseUrl || `https://${config.isDev ? "dev." : ""}udify.app`;
+      const response = await fetch(`${baseUrl}/api/public/chatbot-config?code=${config.token}`, {
+        method: 'GET',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.chatbot_icon_type) {
+          config.chatbotConfig = {
+            icon_type: data.chatbot_icon_type,
+            icon: data.chatbot_icon_type === 'image' ? data.chatbot_icon_url : data.chatbot_icon,
+            icon_background: data.chatbot_icon_background
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch latest chatbot config, using static config", e);
+    }
+
+    // Store emoji data in config for later use
+    config._emojiData = loadedEmojiData;
 
     async function compressAndEncodeBase64(input) {
       const uint8Array = new TextEncoder().encode(input);
@@ -257,6 +324,9 @@
 
       containerDiv.id = buttonId;
 
+      // Get button size from config (default 48px)
+      const buttonSize = config.buttonSize || '48px';
+
       // Add styles for the button
       const styleSheet = document.createElement("style");
       document.head.appendChild(styleSheet);
@@ -267,9 +337,9 @@
           right: var(--${containerDiv.id}-right, 1rem);
           left: var(--${containerDiv.id}-left, unset);
           top: var(--${containerDiv.id}-top, unset);
-          width: var(--${containerDiv.id}-width, 48px);
-          height: var(--${containerDiv.id}-height, 48px);
-          border-radius: var(--${containerDiv.id}-border-radius, 25px);
+          width: var(--${containerDiv.id}-width, ${buttonSize});
+          height: var(--${containerDiv.id}-height, ${buttonSize});
+          border-radius: var(--${containerDiv.id}-border-radius, 50%);
           background-color: var(--${containerDiv.id}-bg-color, #155EEF);
           box-shadow: var(--${containerDiv.id}-box-shadow, rgba(0, 0, 0, 0.2) 0px 4px 8px 0px);
           cursor: pointer;
@@ -285,10 +355,13 @@
       let customIconHtml = '';
       if (config.chatbotConfig) {
         if (config.chatbotConfig.icon_type === 'image') {
-          customIconHtml = `<img id="customIcon" src="${config.chatbotConfig.icon}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">`;
+          // Display centered image on blue background with circular crop
+          customIconHtml = `<img id="customIcon" src="${config.chatbotConfig.icon}" style="width: 70%; height: 70%; border-radius: 50%; object-fit: contain;">`;
         } else if (config.chatbotConfig.icon_type === 'emoji') {
-          customIconHtml = `<div id="customIcon" style="font-size: 24px; line-height: 1;">${config.chatbotConfig.icon}</div>`;
+          const emojiChar = getEmojiFromShortcode(config.chatbotConfig.icon, config._emojiData);
+          customIconHtml = `<div id="customIcon" style="font-size: calc(${buttonSize} * 0.6); line-height: 1;">${emojiChar}</div>`;
         }
+        // Use custom background if set, otherwise keep default blue
         if (config.chatbotConfig.icon_background) {
           containerDiv.style.backgroundColor = config.chatbotConfig.icon_background;
         }
@@ -297,6 +370,12 @@
       displayDiv.innerHTML = svgIcons + customIconHtml;
       containerDiv.appendChild(displayDiv);
       document.body.appendChild(containerDiv);
+
+      // Hide default icon if custom icon exists
+      if (customIconHtml) {
+        const openIcon = document.getElementById("openIcon");
+        if (openIcon) openIcon.style.display = "none";
+      }
 
       // Add click event listener to toggle chatbot
       containerDiv.addEventListener("click", handleClick);
@@ -404,15 +483,15 @@
         // Update position based on drag axis
         if (axis === "x" || axis === "both") {
           element.style.setProperty(
-            `--${buttonId}-left`,
-            `${Math.max(0, Math.min(newLeft, maxX))}px`
+            `--${buttonId} -left`,
+            `${Math.max(0, Math.min(newLeft, maxX))} px`
           );
         }
 
         if (axis === "y" || axis === "both") {
           element.style.setProperty(
-            `--${buttonId}-bottom`,
-            `${Math.max(0, Math.min(newBottom, maxY))}px`
+            `--${buttonId} -bottom`,
+            `${Math.max(0, Math.min(newBottom, maxY))} px`
           );
         }
       }

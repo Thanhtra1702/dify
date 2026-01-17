@@ -692,7 +692,7 @@ services:
 
   # API service
   api:
-    image: langgenius/dify-api:1.11.2
+    image: dify-api:1.11.2-custom
     restart: always
     environment:
       # Use the shared environment variables.
@@ -803,7 +803,7 @@ services:
 
   # Frontend web application.
   web:
-    image: langgenius/dify-web:1.11.2
+    image: dify-web:1.11.2-custom
     restart: always
     environment:
       CONSOLE_API_URL: ${CONSOLE_API_URL:-}
@@ -852,17 +852,7 @@ services:
     volumes:
       - ./volumes/db/data:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          "CMD",
-          "pg_isready",
-          "-h",
-          "db_postgres",
-          "-U",
-          "${DB_USERNAME:-postgres}",
-          "-d",
-          "${DB_DATABASE:-dify}",
-        ]
+      test: [ "CMD", "pg_isready", "-h", "db_postgres", "-U", "${DB_USERNAME:-postgres}", "-d", "${DB_DATABASE:-dify}" ]
       interval: 1s
       timeout: 3s
       retries: 60
@@ -877,22 +867,11 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-difyai123456}
       MYSQL_DATABASE: ${DB_DATABASE:-dify}
     command: >
-      --max_connections=1000
-      --innodb_buffer_pool_size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M}
-      --innodb_log_file_size=${MYSQL_INNODB_LOG_FILE_SIZE:-128M}
-      --innodb_flush_log_at_trx_commit=${MYSQL_INNODB_FLUSH_LOG_AT_TRX_COMMIT:-2}
+      --max_connections=1000 --innodb_buffer_pool_size=${MYSQL_INNODB_BUFFER_POOL_SIZE:-512M} --innodb_log_file_size=${MYSQL_INNODB_LOG_FILE_SIZE:-128M} --innodb_flush_log_at_trx_commit=${MYSQL_INNODB_FLUSH_LOG_AT_TRX_COMMIT:-2}
     volumes:
       - ${MYSQL_HOST_VOLUME:-./volumes/mysql/data}:/var/lib/mysql
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-u",
-          "root",
-          "-p${DB_PASSWORD:-difyai123456}",
-        ]
+      test: [ "CMD", "mysqladmin", "ping", "-u", "root", "-p${DB_PASSWORD:-difyai123456}" ]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -909,11 +888,7 @@ services:
     # Set the redis password when startup redis server.
     command: redis-server --requirepass ${REDIS_PASSWORD:-difyai123456}
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "redis-cli -a ${REDIS_PASSWORD:-difyai123456} ping | grep -q PONG",
-        ]
+      test: [ "CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD:-difyai123456} ping | grep -q PONG" ]
 
   # The DifySandbox
   sandbox:
@@ -935,7 +910,7 @@ services:
       - ./volumes/sandbox/dependencies:/dependencies
       - ./volumes/sandbox/conf:/conf
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8194/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8194/health" ]
     networks:
       - ssrf_proxy_network
 
@@ -1019,12 +994,7 @@ services:
     volumes:
       - ./ssrf_proxy/squid.conf.template:/etc/squid/squid.conf.template
       - ./ssrf_proxy/docker-entrypoint.sh:/docker-entrypoint-mount.sh
-    entrypoint:
-      [
-        "sh",
-        "-c",
-        "cp /docker-entrypoint-mount.sh /docker-entrypoint.sh && sed -i 's/\r$$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh && /docker-entrypoint.sh",
-      ]
+    entrypoint: [ "sh", "-c", "cp /docker-entrypoint-mount.sh /docker-entrypoint.sh && sed -i 's/\r$$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh && /docker-entrypoint.sh" ]
     environment:
       # pls clearly modify the squid env vars to fit your network environment.
       HTTP_PORT: ${SSRF_HTTP_PORT:-3128}
@@ -1053,8 +1023,8 @@ services:
       - CERTBOT_EMAIL=${CERTBOT_EMAIL}
       - CERTBOT_DOMAIN=${CERTBOT_DOMAIN}
       - CERTBOT_OPTIONS=${CERTBOT_OPTIONS:-}
-    entrypoint: ["/docker-entrypoint.sh"]
-    command: ["tail", "-f", "/dev/null"]
+    entrypoint: [ "/docker-entrypoint.sh" ]
+    command: [ "tail", "-f", "/dev/null" ]
 
   # The nginx reverse proxy.
   # used for reverse proxying the API service and Web service.
@@ -1071,12 +1041,7 @@ services:
       - ./volumes/certbot/conf/live:/etc/letsencrypt/live # cert dir (with certbot container)
       - ./volumes/certbot/conf:/etc/letsencrypt
       - ./volumes/certbot/www:/var/www/html
-    entrypoint:
-      [
-        "sh",
-        "-c",
-        "cp /docker-entrypoint-mount.sh /docker-entrypoint.sh && sed -i 's/\r$$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh && /docker-entrypoint.sh",
-      ]
+    entrypoint: [ "sh", "-c", "cp /docker-entrypoint-mount.sh /docker-entrypoint.sh && sed -i 's/\r$$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh && /docker-entrypoint.sh" ]
     environment:
       NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:-_}
       NGINX_HTTPS_ENABLED: ${NGINX_HTTPS_ENABLED:-false}
@@ -1150,11 +1115,7 @@ services:
     ports:
       - "${OCEANBASE_VECTOR_PORT:-2881}:2881"
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'obclient -h127.0.0.1 -P2881 -uroot@test -p${OCEANBASE_VECTOR_PASSWORD:-difyai123456} -e "SELECT 1;"',
-        ]
+      test: [ "CMD-SHELL", 'obclient -h127.0.0.1 -P2881 -uroot@test -p${OCEANBASE_VECTOR_PASSWORD:-difyai123456} -e "SELECT 1;"' ]
       interval: 10s
       retries: 30
       start_period: 30s
@@ -1176,11 +1137,7 @@ services:
     ports:
       - "${OCEANBASE_VECTOR_PORT:-2881}:2881"
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'mysql -h127.0.0.1 -P2881 -uroot -p${OCEANBASE_VECTOR_PASSWORD:-difyai123456} -e "SELECT 1;"',
-        ]
+      test: [ "CMD-SHELL", 'mysql -h127.0.0.1 -P2881 -uroot -p${OCEANBASE_VECTOR_PASSWORD:-difyai123456} -e "SELECT 1;"' ]
       interval: 5s
       retries: 60
       timeout: 5s
@@ -1218,17 +1175,13 @@ services:
     working_dir: /opt/couchbase
     stdin_open: true
     tty: true
-    entrypoint: [""]
+    entrypoint: [ "" ]
     command: sh -c "/opt/couchbase/init/init-cbserver.sh"
     volumes:
       - ./volumes/couchbase/data:/opt/couchbase/var/lib/couchbase/data
     healthcheck:
       # ensure bucket was created before proceeding
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s -f -u Administrator:password http://localhost:8091/pools/default/buckets | grep -q '\\[{' || exit 1",
-        ]
+      test: [ "CMD-SHELL", "curl -s -f -u Administrator:password http://localhost:8091/pools/default/buckets | grep -q '\\[{' || exit 1" ]
       interval: 10s
       retries: 10
       start_period: 30s
@@ -1254,9 +1207,9 @@ services:
     volumes:
       - ./volumes/pgvector/data:/var/lib/postgresql/data
       - ./pgvector/docker-entrypoint.sh:/docker-entrypoint.sh
-    entrypoint: ["/docker-entrypoint.sh"]
+    entrypoint: [ "/docker-entrypoint.sh" ]
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -1280,7 +1233,7 @@ services:
       - ./vastbase/backup:/home/vastbase/backup
       - ./vastbase/backup_log:/home/vastbase/backup_log
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -1302,7 +1255,7 @@ services:
     volumes:
       - ./volumes/pgvecto_rs/data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -1335,7 +1288,7 @@ services:
       - ./volumes/iris:/opt/iris
       - ./iris/iris-init.script:/iris-init.script
       - ./iris/docker-entrypoint.sh:/custom-entrypoint.sh
-    entrypoint: ["/custom-entrypoint.sh"]
+    entrypoint: [ "/custom-entrypoint.sh" ]
     tty: true
     environment:
       TZ: ${IRIS_TIMEZONE:-UTC}
@@ -1370,7 +1323,7 @@ services:
       - ./volumes/milvus/etcd:/etcd
     command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: [ "CMD", "etcdctl", "endpoint", "health" ]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -1389,7 +1342,7 @@ services:
       - ./volumes/milvus/minio:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -1401,7 +1354,7 @@ services:
     image: milvusdb/milvus:v2.6.3
     profiles:
       - milvus
-    command: ["milvus", "run", "standalone"]
+    command: [ "milvus", "run", "standalone" ]
     environment:
       ETCD_ENDPOINTS: ${ETCD_ENDPOINTS:-etcd:2379}
       MINIO_ADDRESS: ${MINIO_ADDRESS:-minio:9000}
@@ -1409,7 +1362,7 @@ services:
     volumes:
       - ./volumes/milvus/milvus:/var/lib/milvus
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
       interval: 30s
       start_period: 90s
       timeout: 20s
@@ -1475,7 +1428,7 @@ services:
     volumes:
       - ./volumes/opengauss/data:/var/lib/opengauss/data
     healthcheck:
-      test: ["CMD-SHELL", "netstat -lntp | grep tcp6 > /dev/null 2>&1"]
+      test: [ "CMD-SHELL", "netstat -lntp | grep tcp6 > /dev/null 2>&1" ]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -1537,10 +1490,9 @@ services:
       resources:
         limits:
           memory: 2g
-    entrypoint: ["sh", "-c", "sh /docker-entrypoint-mount.sh"]
+    entrypoint: [ "sh", "-c", "sh /docker-entrypoint-mount.sh" ]
     healthcheck:
-      test:
-        ["CMD", "curl", "-s", "http://localhost:9200/_cluster/health?pretty"]
+      test: [ "CMD", "curl", "-s", "http://localhost:9200/_cluster/health?pretty" ]
       interval: 30s
       timeout: 10s
       retries: 50
@@ -1568,7 +1520,7 @@ services:
     ports:
       - ${KIBANA_PORT:-5601}:5601
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:5601 >/dev/null || exit 1"]
+      test: [ "CMD-SHELL", "curl -s http://localhost:5601 >/dev/null || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3

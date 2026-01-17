@@ -28,25 +28,27 @@ type Props = {
 
 const OPTION_MAP = {
   iframe: {
-    getContent: (url: string, token: string) =>
+    getContent: (url: string, token: string, primaryColor: string, isTestEnv?: boolean, siteInfo?: SiteInfo) =>
       `<iframe
- src="${url}${basePath}/chatbot/${token}"
+ src="${url}${basePath}/chatbot/${token}${siteInfo?.custom_chatbot_icon_url ? `?custom_chatbot_icon_url=${encodeURIComponent(siteInfo.custom_chatbot_icon_url)}` : ''}"
  style="width: 100%; height: 100%; min-height: 700px"
  frameborder="0"
  allow="microphone">
 </iframe>`,
   },
   scripts: {
-    getContent: (url: string, token: string, primaryColor: string, isTestEnv?: boolean) =>
-      `<script>
+    getContent: (url: string, token: string, primaryColor: string, isTestEnv?: boolean, siteInfo?: SiteInfo) => {
+      const configParts = [`token: '${token}'`]
+      if (isTestEnv)
+        configParts.push('isDev: true')
+      if (IS_CE_EDITION)
+        configParts.push(`baseUrl: '${url}${basePath}'`)
+      // Note: chatbotConfig is auto-fetched by embed.js, no need to include here
+
+      return `<script>
  window.difyChatbotConfig = {
-  token: '${token}'${isTestEnv
-    ? `,
-  isDev: true`
-    : ''}${IS_CE_EDITION
-    ? `,
-  baseUrl: '${url}${basePath}'`
-    : ''},
+  ${configParts.join(',\n  ')},
+  // buttonSize: '60px', // Uncomment to change bubble button size (default: 48px)
   inputs: {
     // You can define the inputs from the Start node here
     // key is the variable name
@@ -76,12 +78,14 @@ const OPTION_MAP = {
     width: 24rem !important;
     height: 40rem !important;
   }
-</style>`,
+</style>`
+    },
   },
   chromePlugin: {
     getContent: (url: string, token: string) => `ChatBot URL: ${url}${basePath}/chatbot/${token}`,
   },
 }
+
 const prefixEmbedded = 'appOverview.overview.appInfo.embedded'
 
 type Option = keyof typeof OPTION_MAP
@@ -101,6 +105,7 @@ const Embedded = ({ siteInfo, isShow, onClose, appBaseUrl, accessToken, classNam
   const themeBuilder = useThemeContext()
   themeBuilder.buildTheme(siteInfo?.chat_color_theme ?? null, siteInfo?.chat_color_theme_inverted ?? false)
   const isTestEnv = langGeniusVersionInfo.current_env === 'TESTING' || langGeniusVersionInfo.current_env === 'DEVELOPMENT'
+
   const onClickCopy = () => {
     if (option === 'chromePlugin') {
       const splitUrl = OPTION_MAP[option].getContent(appBaseUrl, accessToken).split(': ')
@@ -108,7 +113,7 @@ const Embedded = ({ siteInfo, isShow, onClose, appBaseUrl, accessToken, classNam
         copy(splitUrl[1])
     }
     else {
-      copy(OPTION_MAP[option].getContent(appBaseUrl, accessToken, themeBuilder.theme?.primaryColor ?? '#1C64F2', isTestEnv))
+      copy(OPTION_MAP[option].getContent(appBaseUrl, accessToken, themeBuilder.theme?.primaryColor ?? '#1C64F2', isTestEnv, siteInfo))
     }
     setIsCopied({ ...isCopied, [option]: true })
   }
@@ -193,7 +198,7 @@ const Embedded = ({ siteInfo, isShow, onClose, appBaseUrl, accessToken, classNam
         </div>
         <div className="flex w-full items-start justify-start gap-2 overflow-x-auto p-3">
           <div className="shrink grow basis-0 font-mono text-[13px] leading-tight text-text-secondary">
-            <pre className="select-text">{OPTION_MAP[option].getContent(appBaseUrl, accessToken, themeBuilder.theme?.primaryColor ?? '#1C64F2', isTestEnv)}</pre>
+            <pre className="select-text">{OPTION_MAP[option].getContent(appBaseUrl, accessToken, themeBuilder.theme?.primaryColor ?? '#1C64F2', isTestEnv, siteInfo)}</pre>
           </div>
         </div>
       </div>

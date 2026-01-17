@@ -50,7 +50,7 @@ const Chatbot = () => {
       <div
         className={cn(
           'flex flex-col rounded-2xl',
-          isMobile ? 'h-[calc(100vh_-_60px)] shadow-xs' : 'h-[100vh] bg-chatbot-bg',
+          isMobile ? 'h-full shadow-xs' : 'h-[100vh] bg-chatbot-bg',
         )}
         style={isMobile ? Object.assign({}, CssTransform(themeBuilder?.theme?.backgroundHeaderColorStyle ?? '')) : {}}
       >
@@ -71,8 +71,8 @@ const Chatbot = () => {
           )}
         </div>
       </div>
-      {/* powered by */}
-      {isMobile && (
+      {/* powered by removed */}
+      {/* {isMobile && (
         <div className="flex h-[60px] shrink-0 items-center pl-2">
           {!appData?.custom_config?.remove_webapp_brand && (
             <div className={cn(
@@ -90,7 +90,7 @@ const Chatbot = () => {
             </div>
           )}
         </div>
-      )}
+      )} */}
     </div>
   )
 }

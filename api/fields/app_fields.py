@@ -222,6 +222,10 @@ app_site_fields = {
     "prompt_public": fields.Boolean,
     "show_workflow_steps": fields.Boolean,
     "use_icon_as_answer_icon": fields.Boolean,
+    "chatbot_icon_type": fields.String,
+    "chatbot_icon": fields.String,
+    "chatbot_icon_background": fields.String,
+    "chatbot_icon_url": ChatbotIconUrlField,
 }
 
 leaked_dependency_fields = {"type": fields.String, "value": fields.Raw, "current_identifier": fields.String}

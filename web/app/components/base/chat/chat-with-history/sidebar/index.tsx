@@ -147,8 +147,8 @@ const Sidebar = ({ isPanel, panelVisible }: Props) => {
           data={appData?.site}
           forceClose={isPanel && !panelVisible}
         />
-        {/* powered by */}
-        <div className="shrink-0">
+        {/* powered by removed */}
+        {/* <div className="shrink-0">
           {!appData?.custom_config?.remove_webapp_brand && (
             <div className={cn(
               'flex shrink-0 items-center gap-1.5 px-1',
@@ -164,7 +164,7 @@ const Sidebar = ({ isPanel, panelVisible }: Props) => {
               }
             </div>
           )}
-        </div>
+        </div> */}
         {!!showConfirm && (
           <Confirm
             title={t('share.chat.deleteConversation.title')}
