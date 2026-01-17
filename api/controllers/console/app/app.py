@@ -327,6 +327,9 @@ class Site(ResponseModel):
     prompt_public: bool | None = None
     app_base_url: str | None = None
     show_workflow_steps: bool | None = None
+    chatbot_icon_type: str | None = None
+    chatbot_icon: str | None = None
+    chatbot_icon_background: str | None = None
     use_icon_as_answer_icon: bool | None = None
     created_by: str | None = None
     created_at: int | None = None
@@ -337,6 +340,11 @@ class Site(ResponseModel):
     @property
     def icon_url(self) -> str | None:
         return _build_icon_url(self.icon_type, self.icon)
+
+    @computed_field(return_type=str | None)  # type: ignore
+    @property
+    def chatbot_icon_url(self) -> str | None:
+        return _build_icon_url(self.chatbot_icon_type, self.chatbot_icon)
 
     @field_validator("icon_type", mode="before")
     @classmethod
