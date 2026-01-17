@@ -136,7 +136,8 @@
         if (data.chatbot_icon_type) {
           config.chatbotConfig = {
             icon_type: data.chatbot_icon_type,
-            icon: data.chatbot_icon_type === 'image' ? data.chatbot_icon_url : data.chatbot_icon,
+            icon: data.chatbot_icon,
+            icon_url: data.chatbot_icon_url,
             icon_background: data.chatbot_icon_background
           };
         }
