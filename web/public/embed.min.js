@@ -356,7 +356,7 @@
       if (config.chatbotConfig) {
         if (config.chatbotConfig.icon_type === 'image') {
           // Display centered image on blue background with circular crop
-          customIconHtml = `<img id="customIcon" src="${config.chatbotConfig.icon}" style="width: 70%; height: 70%; border-radius: 50%; object-fit: contain;">`;
+          customIconHtml = `<img id="customIcon" src="${config.chatbotConfig.icon_url}" style="width: 70%; height: 70%; border-radius: 50%; object-fit: contain;">`;
         } else if (config.chatbotConfig.icon_type === 'emoji') {
           const emojiChar = getEmojiFromShortcode(config.chatbotConfig.icon, config._emojiData);
           customIconHtml = `<div id="customIcon" style="font-size: calc(${buttonSize} * 0.6); line-height: 1;">${emojiChar}</div>`;
