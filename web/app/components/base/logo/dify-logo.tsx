@@ -31,14 +31,26 @@ const DifyLogo: FC<DifyLogoProps> = ({
   className,
 }) => {
   const { theme } = useTheme()
-  const themedStyle = (theme === 'dark' && style === 'default') ? 'monochromeWhite' : style
+  const isWhite = (theme === 'dark' && style === 'default') || style === 'monochromeWhite'
+
+  // Font size mapping based on logo size
+  const fontSizeMap: Record<LogoSize, string> = {
+    large: 'text-lg font-semibold',
+    medium: 'text-base font-semibold',
+    small: 'text-sm font-semibold',
+  }
 
   return (
-    <img
-      src={`${basePath}${logoPathMap[themedStyle]}`}
-      className={cn('block object-contain', logoSizeMap[size], className)}
-      alt="Dify logo"
-    />
+    <span
+      className={cn(
+        'block font-semibold',
+        fontSizeMap[size],
+        isWhite ? 'text-white' : 'text-gray-900',
+        className
+      )}
+    >
+      BlueData
+    </span>
   )
 }
 

@@ -72,7 +72,7 @@
     "@orpc/openapi-client": "^1.13.4",
     "@orpc/tanstack-query": "^1.13.4",
     "@remixicon/react": "^4.7.0",
-    "@sentry/react": "^8.55.0",
+    "@sentry/react": "^10.32.1",
     "@svgdotjs/svg.js": "^3.2.5",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-form": "^1.23.7",
